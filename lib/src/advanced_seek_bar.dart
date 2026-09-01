@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'models/seek_bar_orientation.dart';
+import 'painters/rounded_track_painter.dart';
+import 'painters/tick_mark_painter.dart';
 import 'seek_bar_theme.dart';
+import 'thumbs/emoji_thumb_shape.dart';
+import 'thumbs/icon_thumb_shape.dart';
 
 class AdvancedSeekBar extends StatelessWidget {
   final double value;
@@ -13,6 +18,7 @@ class AdvancedSeekBar extends StatelessWidget {
   final ValueChanged<double>? onChangeEnd;
 
   final bool enabled;
+  final SeekBarOrientation orientation;
   final bool vertical;
   final bool rtl;
 
@@ -20,7 +26,7 @@ class AdvancedSeekBar extends StatelessWidget {
   final bool showTicks;
 
   final bool emojiThumb;
-  final List<String> bubbleEmojis;
+  final List<String> emojis;
 
   final IconData? thumbIcon;
 
@@ -36,19 +42,37 @@ class AdvancedSeekBar extends StatelessWidget {
     this.onChangeStart,
     this.onChangeEnd,
     this.enabled = true,
+    this.orientation = SeekBarOrientation.horizontal,
     this.vertical = false,
     this.rtl = false,
     this.showValueBubble = false,
     this.showTicks = false,
     this.emojiThumb = false,
-    this.bubbleEmojis = const ['😠', '😐', '😊'],
+    List<String>? emojis,
+    List<String>? bubbleEmojis,
     this.thumbIcon,
     this.theme = const AdvancedSeekBarTheme(),
-  }) : assert(min <= max),
-       assert(value >= min && value <= max);
+  })  : emojis = emojis ?? bubbleEmojis ?? const ['😠', '😐', '😊'],
+        assert(min <= max),
+        assert(value >= min && value <= max);
 
   @override
   Widget build(BuildContext context) {
+    SliderComponentShape? thumbShape;
+    if (emojiThumb) {
+      thumbShape = EmojiThumbShape(
+        emojis: emojis,
+        size: theme.thumbSize,
+      );
+    } else if (thumbIcon != null) {
+      thumbShape = IconThumbShape(
+        icon: thumbIcon!,
+        size: theme.thumbSize,
+        iconSize: theme.iconSize,
+        backgroundColor: theme.activeColor,
+      );
+    }
+
     Widget slider = SliderTheme(
       data: SliderTheme.of(context).copyWith(
         trackHeight: theme.trackHeight,
@@ -60,6 +84,12 @@ class AdvancedSeekBar extends StatelessWidget {
         disabledActiveTrackColor: theme.disabledColor ?? Colors.grey.shade400,
         disabledInactiveTrackColor: theme.disabledColor ?? Colors.grey.shade300,
         disabledThumbColor: theme.disabledColor ?? Colors.grey.shade400,
+        trackShape: RoundedTrackPainter(
+          gradient: theme.gradient,
+          borderRadius: theme.trackRadius,
+        ),
+        tickMarkShape: showTicks ? const TickMarkPainter() : null,
+        thumbShape: thumbShape,
       ),
       child: Slider(
         value: value,
@@ -73,7 +103,7 @@ class AdvancedSeekBar extends StatelessWidget {
       ),
     );
 
-    if (vertical) {
+    if (orientation == SeekBarOrientation.vertical || vertical) {
       slider = RotatedBox(quarterTurns: -1, child: slider);
     }
 
