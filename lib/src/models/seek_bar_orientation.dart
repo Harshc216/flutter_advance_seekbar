@@ -1,0 +1,4 @@
+enum SeekBarOrientation {
+  horizontal,
+  vertical,
+}
