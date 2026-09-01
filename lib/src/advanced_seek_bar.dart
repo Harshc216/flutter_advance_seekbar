@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'models/seek_bar_orientation.dart';
 import 'seek_bar_theme.dart';
 
 class AdvancedSeekBar extends StatelessWidget {
